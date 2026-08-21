@@ -1,9 +1,11 @@
+// Day 51 - Question 1: Lowest Common Ancestor in BST
+// Close
 // Problem Statement:
-// Find the Lowest Common Ancestor (LCA) of two nodes in a Binary Tree.
+// Find the Lowest Common Ancestor (LCA) of two nodes in a Binary Search Tree.
 
 // Input Format:
 // - First line contains integer N
-// - Second line contains level-order traversal (-1 represents NULL)
+// - Second line contains N space-separated integers
 // - Third line contains two node values
 
 // Output Format:
@@ -12,15 +14,13 @@
 // Example:
 // Input:
 // 7
-// 1 2 3 4 5 6 7
-// 4 5
+// 6 2 8 0 4 7 9
+// 2 8
 
 // Output:
-// 2
-
+// 6
 
 #include <iostream>
-#include <queue>
 using namespace std;
 
 struct Node {
@@ -35,85 +35,55 @@ struct Node {
     }
 };
 
-// Build tree from level order
-Node* buildTree(int arr[], int n) {
-    if (n == 0 || arr[0] == -1)
-        return NULL;
+// Insert into BST
+Node* insert(Node* root, int x) {
+    if (root == NULL)
+        return new Node(x);
 
-    Node* root = new Node(arr[0]);
-
-    queue<Node*> q;
-    q.push(root);
-
-    int i = 1;
-
-    while (!q.empty() && i < n) {
-        Node* current = q.front();
-        q.pop();
-
-        // Left child
-        if (i < n && arr[i] != -1) {
-            current->left = new Node(arr[i]);
-            q.push(current->left);
-        }
-        i++;
-
-        // Right child
-        if (i < n && arr[i] != -1) {
-            current->right = new Node(arr[i]);
-            q.push(current->right);
-        }
-        i++;
-    }
+    if (x < root->data)
+        root->left = insert(root->left, x);
+    else
+        root->right = insert(root->right, x);
 
     return root;
 }
 
 // Find LCA
 Node* findLCA(Node* root, int p, int q) {
-    // If tree is empty
     if (root == NULL)
         return NULL;
 
-    // If current node is p or q
-    if (root->data == p || root->data == q)
-        return root;
+    // Both values are smaller
+    if (p < root->data && q < root->data)
+        return findLCA(root->left, p, q);
 
-    // Search left and right
-    Node* left = findLCA(root->left, p, q);
-    Node* right = findLCA(root->right, p, q);
+    // Both values are greater
+    if (p > root->data && q > root->data)
+        return findLCA(root->right, p, q);
 
-    // One node found on each side
-    if (left != NULL && right != NULL)
-        return root;
-
-    // Return whichever side has a node
-    if (left != NULL)
-        return left;
-
-    return right;
+    // They are on different sides
+    // or root is one of p or q
+    return root;
 }
 
 int main() {
     int n;
     cin >> n;
 
-    int arr[1000];
+    Node* root = NULL;
 
-    for (int i = 0; i < n; i++)
-        cin >> arr[i];
+    for (int i = 0; i < n; i++) {
+        int x;
+        cin >> x;
+        root = insert(root, x);
+    }
 
     int p, q;
     cin >> p >> q;
 
-    Node* root = buildTree(arr, n);
-
     Node* ans = findLCA(root, p, q);
 
-    if (ans != NULL)
-        cout << ans->data;
-    else
-        cout << -1;
+    cout << ans->data;
 
     return 0;
 }
